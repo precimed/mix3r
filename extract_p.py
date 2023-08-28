@@ -33,6 +33,8 @@ pcols = "p_1 p_2 p_3 p_12 p_13 p_23 p_123".split()
 total = df["p_1"] + df["p_2"] + df["p_3"] - df["p_12"] - df["p_13"] - df["p_23"] + df["p_123"]
 df_p_proportion = df[pcols].div(total,axis=0)
 i_min = (df_p_proportion - df_p_proportion.median()).abs().sum(axis=1).argmin()
+i_rank = (df_p_proportion - df_p_proportion.median()).abs().sum(axis=1).rank()
+df["rank_p_proportion_deviation_from_median"] = i_rank
 print(df)
 print(f"Minimum deviation from median p proportions in run {i_min}")
 df.to_csv(outf, sep='\t', index=False)
