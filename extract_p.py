@@ -21,12 +21,24 @@ for irow, fname in enumerate(fnames):
     row = [fname]
     with open(fname) as f:
         d = json.load(f)
-        p_list = []
-        success_list = []
-        for i in "1 2 3 12 13 23 123".split():
+        print(d["opt_out_12_13_23"])
+        for i in "1 2 3".split():
             k = f"opt_out_{i}"
             row += d[k]["opt_par"]
             row.append(d[k]["opt_res"]["success"])
+        if not d["opt_out_12_13_23"] is None:
+            p12, p13, p23, rho12, rho13, rho23, rho012, rho013, rho023 = d["opt_out_12_13_23"]["opt_par"]
+            success = d["opt_out_12_13_23"]["opt_res"]["success"]
+            row += [p12, rho12, rho012, success, p13, rho13, rho013, success, p23, rho23, rho023, success]
+        else:
+            for i in "12 13 23".split():
+                k = f"opt_out_{i}"
+                row += d[k]["opt_par"]
+                row.append(d[k]["opt_res"]["success"])
+        i = "123"
+        k = f"opt_out_{i}"
+        row += d[k]["opt_par"]
+        row.append(d[k]["opt_res"]["success"])
         df.loc[irow] = row
 
 pcols = "p_1 p_2 p_3 p_12 p_13 p_23 p_123".split()
