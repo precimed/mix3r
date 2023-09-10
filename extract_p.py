@@ -21,7 +21,6 @@ for irow, fname in enumerate(fnames):
     row = [fname]
     with open(fname) as f:
         d = json.load(f)
-        print(d["opt_out_12_13_23"])
         for i in "1 2 3".split():
             k = f"opt_out_{i}"
             row += d[k]["opt_par"]
