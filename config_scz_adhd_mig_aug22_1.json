@@ -21,16 +21,16 @@
     "pruning": {
         "do_pruning": true,
         "r2_prune_thresh": 0.8,
-        "n_random": 120000,
+        "n_random": 400000,
         "rand_prune_seed": 1
     },
 
     "optimization": {
-        "maxiter_1d_glob": 20,
-        "maxiter_1d_loc": 150,
-        "maxiter_2d_glob": 20,
-        "maxiter_2d_loc": 150,
-        "maxiter_3d": 20
+        "maxiter_1d_glob": 64,
+        "maxiter_1d_loc": 200,
+        "maxiter_2d_glob": 64,
+        "maxiter_2d_loc": 200,
+        "maxiter_3d": 16
     }
 }
 

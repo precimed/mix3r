@@ -945,8 +945,8 @@ def optimize_3d(z0_1_vec, z0_2_vec, z0_3_vec, n_1_vec, n_2_vec, n_3_vec,
             opt_res["success"] = True
             opt_res["status"] = None
             opt_res["message"] = ""
-            opt_res["nfev"] = Ns
-            opt_res["nit"] = Ns
+            opt_res["nfev"] = maxiter
+            opt_res["nit"] = maxiter
     opt_out = dict(opt_res=opt_res, opt_par=opt_par)
     return opt_out
 
@@ -1087,7 +1087,7 @@ if __name__ == "__main__":
 
         p_123_lb, p_123_rb = math.log10(max(1E-6, p_12+p_13-p_1, p_12+p_23-p_2, p_13+p_23-p_3)), math.log10(min(p_12, p_13, p_23)) # on log10 scale
         if p_123_lb > p_123_rb:
-            print("Run triple bivariate analysis tomake parameters feasible for trivariate.")
+            print("Run triple bivariate analysis to make parameters feasible for trivariate.")
             now = datetime.now()
             start_time = now.strftime("%D-%H:%M:%S")
             opt_out_12_13_23 = optimize_2d_constr(p_1, sb2_1, s02_1, p_2, sb2_2, s02_2, p_3, sb2_3, s02_3,
