@@ -1,4 +1,5 @@
 ### Create cluster environment with [micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html).
+The procedure should work on most of Linux distributions (but not on Mac).
 1. Create a folder, download the latest version of micromamba, configure and [install](https://mamba.readthedocs.io/en/latest/installation.html):
 ```
 mkdir -p micromamba/root
