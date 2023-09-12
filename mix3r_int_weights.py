@@ -938,8 +938,7 @@ def optimize_3d(z0_1_vec, z0_2_vec, z0_3_vec, n_1_vec, n_2_vec, n_3_vec,
                 opt_res[k] = res.get(k)
         else:
             print("Using brute optimization.")
-            Ns = 16
-            x0, fval, grid, Jout = brute(obj_func_3d_brute, ranges=((p_123_lb, p_123_rb),), args=args_opt, Ns=Ns, finish=False, full_output=True)
+            x0, fval, grid, Jout = brute(obj_func_3d_brute, ranges=((p_123_lb, p_123_rb),), args=args_opt, Ns=maxiter, finish=False, full_output=True)
             x0, fval = float(x0), float(fval) # to make it JSON serializable
             opt_par = [10**x0]
             opt_res = dict(x=[x0], fun=[fval])
