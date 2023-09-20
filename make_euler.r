@@ -39,11 +39,12 @@ p23 <- best$p_23 - best$p_123
 if (p23<0 & p23>acceptable_negative_gap) {p23 <- 0}
 p123 <- best$p_123
 if (p123<0 & p1>acceptable_negative_gap) {p123 <- 0}
-vec2plot = c("1"=p1,"2"=p2,"3"=p3,"1&2"=p12,"1&3"=p13,"2&3"=p23,"1&2&3"=p123)
+factor = 10 # otherwise behaves badly with small numbers
+vec2plot = c("1"=factor*p1,"2"=factor*p2,"3"=factor*p3,"1&2"=factor*p12,"1&3"=factor*p13,"2&3"=factor*p23,"1&2&3"=factor*p123)
 
 fit <- euler(vec2plot, input="disjoint", shape="ellipse")
 
-png(filename=outf)
+png(filename=outf, width=600, height=600, units="px", pointsize=12, bg="white", res=NA)
 plot(fit,
      fills = list(fill=colors, alpha=1),
      labels = list(labels=labels, col="black", fontsize=18),
