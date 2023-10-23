@@ -11,7 +11,7 @@
 set -e # Exit the script on any error
 set -u # Treat any unset variables as an error
 module --quiet purge  # Reset the modules to the system default
-source $HOME/py_envs/cm/bin/activate
+source mix3r/bin/activate
 
 CONFIG=$1
 
