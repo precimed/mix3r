@@ -15,7 +15,7 @@ fnames = args.input
 print(f"Loading {fnames}")
 outf = f"{args.out}.parameters.csv" # "aud_adhd_mig_aug22.parameters.csv"
 
-df = pd.DataFrame(columns="run_id p_1 sb2_1 s02_1 success_1 p_2 sb2_2 s02_2 success_2 p_3 sb2_3 s02_3 success_3 p_12 rho_12 rho0_12 success_12 p_13 rho_13 rho0_13 success_13 p_23 rho_23 rho0_23 success_23 p_123 success_123".split())
+df = pd.DataFrame(columns="run_id p_1 sb2_1 s02_1 h2_1 success_1 p_2 sb2_2 s02_2 h2_2 success_2 p_3 sb2_3 s02_3 h2_3 success_3 p_12 rho_12 rho0_12 rg_12 success_12 p_13 rho_13 rho0_13 rg_13 success_13 p_23 rho_23 rho0_23 rg_23 success_23 p_123 success_123".split())
 
 for irow, fname in enumerate(fnames):
     row = [fname]
@@ -24,15 +24,21 @@ for irow, fname in enumerate(fnames):
         for i in "1 2 3".split():
             k = f"opt_out_{i}"
             row += d[k]["opt_par"]
+            row.append(d[k]["h2"])
             row.append(d[k]["opt_res"]["success"])
         if not d["opt_out_12_13_23"] is None:
-            p12, p13, p23, rho12, rho13, rho23, rho012, rho013, rho023 = d["opt_out_12_13_23"]["opt_par"]
+            if len(d["opt_out_12_13_23"]["opt_par"]) == 9:
+                p12, p13, p23, rho12, rho13, rho23, rho012, rho013, rho023 = d["opt_out_12_13_23"]["opt_par"]
+                rg12, rg13, rg23 = "NA", "NA", "NA"
+            else:
+                p12, p13, p23, rho12, rho13, rho23, rho012, rho013, rho023, rg12, rg13, rg23 = d["opt_out_12_13_23"]["opt_par"]
             success = d["opt_out_12_13_23"]["opt_res"]["success"]
-            row += [p12, rho12, rho012, success, p13, rho13, rho013, success, p23, rho23, rho023, success]
+            row += [p12, rho12, rho012, rg12, success, p13, rho13, rho013, rg13, success, p23, rho23, rho023, rg23, success]
         else:
             for i in "12 13 23".split():
                 k = f"opt_out_{i}"
                 row += d[k]["opt_par"]
+                row.append(d[k]["rg"])
                 row.append(d[k]["opt_res"]["success"])
         i = "123"
         k = f"opt_out_{i}"
