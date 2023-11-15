@@ -531,9 +531,9 @@ def log_pdf_3d(res_vec, z0_1_vec, z0_2_vec, z0_3_vec, n_1_vec, n_2_vec, n_3_vec,
                p_123, r2_het_hist, ld_scores, nbin_r2_het_hist):
     tid = cuda.grid(1)
     if tid < len(res_vec):
-        h = nb.float32(1E-1) # define grid
-        min_pdf = nb.float32(1E-30)
-        tol = nb.float32(1E-6)
+        h = nb.float64(1E-1) # define grid
+        min_pdf = nb.float64(1E-100)
+        tol = nb.float64(1E-6)
         z0_1, z0_2, z0_3 = z0_1_vec[tid], z0_2_vec[tid], z0_3_vec[tid]
         n_1, n_2, n_3 = n_1_vec[tid], n_2_vec[tid], n_3_vec[tid]
         r2_het_hist_tid = r2_het_hist[tid*nbin_r2_het_hist:(tid+1)*nbin_r2_het_hist]
@@ -683,11 +683,11 @@ def cost_3d_gpu(z0_1_vec, z0_2_vec, z0_3_vec, n_1_vec, n_2_vec, n_3_vec,
                 p_1, p_2, p_3, sb2_1, sb2_2, sb2_3, s02_1, s02_2, s02_3,
                 p_12, p_13, p_23, rho_12, rho_13, rho_23,  rho0_12, rho0_13, rho0_23,
                 p_123, r2_het_hist, ld_scores, nbin_r2_het_hist):
-    p_1, p_2, p_3, sb2_1, sb2_2, sb2_3, s02_1, s02_2, s02_3, p_12, p_13, p_23, rho_12, rho_13, rho_23,  rho0_12, rho0_13, rho0_23, p_123 = map(nb.float32,
+    p_1, p_2, p_3, sb2_1, sb2_2, sb2_3, s02_1, s02_2, s02_3, p_12, p_13, p_23, rho_12, rho_13, rho_23,  rho0_12, rho0_13, rho0_23, p_123 = map(nb.float64,
                                                                                                                                                (p_1, p_2, p_3, sb2_1, sb2_2, sb2_3, s02_1, s02_2, s02_3,
                                                                                                                                                 p_12, p_13, p_23, rho_12, rho_13, rho_23,
                                                                                                                                                 rho0_12, rho0_13, rho0_23, p_123))
-    log_pdf_vec_gpu = cuda.device_array_like(z0_1_vec)
+    log_pdf_vec_gpu = cuda.device_array(shape=z0_1_vec.shape, dtype=np.float64)
     
     r2_het_hist_gpu = cuda.to_device(r2_het_hist)
     z0_1_vec_gpu = cuda.to_device(z0_1_vec)
@@ -975,6 +975,8 @@ if __name__ == "__main__":
 
     r2_het_hist_global, z_n_dict_global, ld_scores_global = r2_het_hist, z_n_dict, ld_scores
 
+    total_used_het = get_total_het_used(config["template_dir"], snps_df, config["pruning"]["rand_prune_seed"], config["pruning"]["r2_prune_thresh"])
+
     if True:
         now = datetime.now()
         start_time = now.strftime("%D-%H:%M:%S")
@@ -982,7 +984,7 @@ if __name__ == "__main__":
                                z_n_dict_global["Z_0"], z_n_dict_global["N_0"], r2_het_hist_global, ld_scores_global,
                                 maxiter_1d_glob=config["optimization"]["maxiter_1d_glob"],
                                 maxiter_1d_loc=config["optimization"]["maxiter_1d_loc"])
-
+        opt_out_1["h2"] = total_used_het*opt_out_1["opt_par"][0]*opt_out_1["opt_par"][1]
         now = datetime.now()
         end_time = now.strftime("%D-%H:%M:%S")
         print("Start Time =", start_time)
@@ -998,6 +1000,7 @@ if __name__ == "__main__":
                                z_n_dict_global["Z_1"], z_n_dict_global["N_1"], r2_het_hist_global, ld_scores_global,
                                 maxiter_1d_glob=config["optimization"]["maxiter_1d_glob"],
                                 maxiter_1d_loc=config["optimization"]["maxiter_1d_loc"])
+        opt_out_2["h2"] = total_used_het*opt_out_2["opt_par"][0]*opt_out_2["opt_par"][1]
         now = datetime.now()
         end_time = now.strftime("%D-%H:%M:%S")
         print("Start Time =", start_time)
@@ -1012,6 +1015,7 @@ if __name__ == "__main__":
                                 z_n_dict_global["Z_2"], z_n_dict_global["N_2"], r2_het_hist_global, ld_scores_global,
                                 maxiter_1d_glob=config["optimization"]["maxiter_1d_glob"],
                                 maxiter_1d_loc=config["optimization"]["maxiter_1d_loc"])
+        opt_out_3["h2"] = total_used_het*opt_out_3["opt_par"][0]*opt_out_3["opt_par"][1]
         now = datetime.now()
         end_time = now.strftime("%D-%H:%M:%S")
         print("Start Time =", start_time)
@@ -1032,6 +1036,7 @@ if __name__ == "__main__":
                                  z_n_dict_global["Z_1"], z_n_dict_global["N_1"], r2_het_hist_global, ld_scores_global,
                                  maxiter_2d_glob=config["optimization"]["maxiter_2d_glob"],
                                  maxiter_2d_loc=config["optimization"]["maxiter_2d_loc"])
+        opt_out_12["rg"] = opt_out_12["opt_par"][0]*opt_out_12["opt_par"][1]/math.sqrt(p_1*p_2)
         now = datetime.now()
         end_time = now.strftime("%D-%H:%M:%S")
         print("Start Time =", start_time)
@@ -1051,6 +1056,7 @@ if __name__ == "__main__":
                                  z_n_dict_global["Z_2"], z_n_dict_global["N_2"], r2_het_hist_global, ld_scores_global,
                                  maxiter_2d_glob=config["optimization"]["maxiter_2d_glob"],
                                  maxiter_2d_loc=config["optimization"]["maxiter_2d_loc"])
+        opt_out_13["rg"] = opt_out_13["opt_par"][0]*opt_out_13["opt_par"][1]/math.sqrt(p_1*p_3)
         now = datetime.now()
         end_time = now.strftime("%D-%H:%M:%S")
         print("Start Time =", start_time)
@@ -1070,6 +1076,7 @@ if __name__ == "__main__":
                                  z_n_dict_global["Z_2"], z_n_dict_global["N_2"], r2_het_hist_global, ld_scores_global,
                                  maxiter_2d_glob=config["optimization"]["maxiter_2d_glob"],
                                  maxiter_2d_loc=config["optimization"]["maxiter_2d_loc"])
+        opt_out_23["rg"] = opt_out_23["opt_par"][0]*opt_out_23["opt_par"][1]/math.sqrt(p_2*p_3)
         now = datetime.now()
         end_time = now.strftime("%D-%H:%M:%S")
         print("Start Time =", start_time)
@@ -1101,6 +1108,11 @@ if __name__ == "__main__":
             print("Bivariate constrained result 1 vs 2 vs 3:")
             print(opt_out_12_13_23)
             p_12, p_13, p_23, rho_12, rho_13, rho_23, rho0_12, rho0_13, rho0_23 = opt_out_12_13_23['opt_par'] # reassign bivariate parameters
+            opt_out_12_13_23['opt_par'].append(p_12*rho_12/math.sqrt(p_1*p_2))
+            opt_out_12_13_23['opt_par'].append(p_13*rho_13/math.sqrt(p_1*p_3))
+            opt_out_12_13_23['opt_par'].append(p_23*rho_23/math.sqrt(p_2*p_3))
+            # After all:
+            # opt_out_12_13_23['opt_par'] = [p_12, p_13, p_23, rho_12, rho_13, rho_23, rho0_12, rho0_13, rho0_23, rg_12, rg_13, rg_23]
         else:
             opt_out_12_13_23 = None
         # Run trivariate analysis
