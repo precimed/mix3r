@@ -15,7 +15,7 @@
         "maf_thresh": 0.05,
         "info_thresh": 0.8,
         "z_thresh": 32,
-        "exclude_regions": ["6:25000000-33000000"]
+        "exclude_regions": ["6:25000000-34000000"]
     },
 
     "pruning": {
