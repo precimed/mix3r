@@ -21,7 +21,7 @@
     "pruning": {
         "do_pruning": true,
         "r2_prune_thresh": 0.8,
-        "n_random": 500000,
+        "n_random": 300000,
         "rand_prune_seed": 1
     },
 

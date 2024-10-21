@@ -44,11 +44,31 @@ vec2plot = c("1"=factor*p1,"2"=factor*p2,"3"=factor*p3,"1&2"=factor*p12,"1&3"=fa
 
 fit <- euler(vec2plot, input="disjoint", shape="ellipse")
 
-png(filename=outf, width=600, height=600, units="px", pointsize=12, bg="white", res=NA)
+edge_lty = 1:1:1
+alpha = 1
+label_color = "black"
+edge_color = "white"
+label_fontsize = 24
+quantile_fontsize = 24
+edge_width = 4
+
+png(filename=paste0(outf,".png"), width=600, height=600, units="px", pointsize=12, bg="white", res=NA)
 plot(fit,
-     fills = list(fill=colors, alpha=1),
-     labels = list(labels=labels, col="black", fontsize=18),
-     edges = list(col="white", lex=2),
-     quantities = list(type="percent", fontsize=18))
+     fills = list(fill=colors, alpha=alpha),
+     labels = list(labels=labels, col=label_color, fontsize=label_fontsize),
+     edges = list(col=edge_color, lex=edge_width),
+     lty = edge_lty,
+     quantities = list(type="percent", cex=1, fontsize=quantile_fontsize))
 supressed_output = dev.off()
-cat(paste("Figure saved to:", outf, "\n"))
+
+svg(filename=paste0(outf,".svg"), bg="white", onefile=TRUE)
+plot(fit,
+     fills = list(fill=colors, alpha=alpha),
+     labels = list(labels=labels, col=label_color, fontsize=label_fontsize),
+     edges = list(col=edge_color, lex=edge_width),
+     lty = edge_lty,
+     quantities = list(type="percent", cex=1, fontsize=quantile_fontsize))
+supressed_output = dev.off()
+
+cat(paste0("Figure saved to: ", outf, ".png", "\n"))
+cat(paste0("Figure saved to: ", outf, ".svg", "\n"))

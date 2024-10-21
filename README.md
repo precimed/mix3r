@@ -7,29 +7,33 @@ The procedure should work on most of Linux distributions (but not on Mac).
 ```
 mkdir -p micromamba/root
 cd micromamba
-wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
 export MAMBA_ROOT_PREFIX=${PWD}/root
 eval "$(./bin/micromamba shell hook -s posix)"
 micromamba activate
 micromamba create -n mix3r \
     -c conda-forge \
-    python=3.11 \
-    conda-pack=0.7.1 \
-    numpy=1.26.0 \
-    scipy=1.11.3 \
-    numba=0.58.1 \
-    pandas=2.1.1 \
-    matplotlib-base=3.8.0 \
-    ipython=8.16.1 \
-    notebook=7.0.6 \
-    r=4.3 \
-    r-essentials=4.3 \
+    python=3.12 \
+    conda-pack=0.8.0 \
+    numpy=2.0.2 \
+    scipy=1.14.1 \
+    numba=0.6.0 \
+    cuda-nvcc cuda-nvrtc "cuda-version>=12.0,<=12.4" \
+    pandas=2.2.3 \
+    matplotlib-base=3.9.2 \
+    ipython=8.28.0 \
+    notebook=7.2.2 \
+    r=4.4 \
+    r-essentials=4.4 \
     r-irkernel=1.3.2 \
-    r-eulerr=7.0.0 \
+    r-eulerr=7.0.2 \
     -c numba \
     icc_rt=2020.2 \
+    -c rapidsai \
+    pynvjitlink=0.3.0 \
     --yes
 ```
+This assumes that you have NVIDIA driver supporting CUDA toolkit version 12. If your driver is for CUDA 11, you have to install CUDA `cudatoolkit` instead of `cuda-nvcc` and `cuda-nvrtc`, see [numba's documentation](https://numba.readthedocs.io/en/stable/cuda/overview.html#software) for more details. For compatibility of minor versions (i.e. 12.4 vs 12.6) it might be better to set the upper bound of cuda-version (which is equal to 12.4 in the code above, and defines the version of CUDA toolkit which will be installed) to the version supported by the NVIDIA driver. CUDA toolkit version supported by the installed NVIDIA driver can be checked with `nvidia-smi` command (shown in the top row of the output table, after the driver version).
 
 2. Activate and pack the environment:
 
