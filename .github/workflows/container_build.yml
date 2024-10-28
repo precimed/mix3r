@@ -1,0 +1,76 @@
+name: ci container build
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+  push:
+    branches:
+      - 'main'
+    tags:
+      - "v*.*.*"
+env:
+  LATEST_TAG: ghcr.io/${{ github.repository_owner }}/mix3r:latest
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/mix3r            
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=pep440,pattern={{version}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}} 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Build and export to Docker
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: "{{defaultContext}}:docker"
+      #     load: true
+      #     tags: ${{ env.LATEST_TAG }}
+      #     file:
+      #       .Dockerfile
+      #     platforms: linux/amd64, linux/arm64
+
+      # - name: Run unit tests I
+      #   run: |
+      #     docker run --rm -v ${{ github.workspace }}:/home ${{ env.LATEST_TAG }} py.test -v tests
+      
+      # - name: Run unit tests II
+      #   run: |
+      #     pip install -r test-requirements.txt
+      #     py.test -v tests
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: "{{defaultContext}}"
+          push: False
+          load: True
+          tags: ${{ steps.meta.outputs.tags }}
+          file:
+            ./docker/Dockerfile
+          platforms: linux/amd64

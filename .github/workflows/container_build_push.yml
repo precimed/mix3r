@@ -1,0 +1,115 @@
+name: ci container build-push
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  LATEST_TAG: ghcr.io/${{ github.repository_owner }}/mix3r:latest
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            ghcr.io/${{ github.repository_owner }}/mix3r       
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=pep440,pattern={{version}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}} 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}      
+
+      # - name: Build and export to Docker
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: "{{defaultContext}}:docker"
+      #     load: true
+      #     tags: ${{ env.LATEST_TAG }}
+      #     file:
+      #       ./dockerfiles/mix3r/Dockerfile
+
+      # - name: Run unit tests I
+      #   run: |
+      #     docker run --rm -v ${{ github.workspace }}:/home ${{ env.LATEST_TAG }} py.test -v tests
+      
+      # - name: Run unit tests II
+      #   run: |
+      #     pip install -r test-requirements.txt
+      #     py.test -v tests
+  
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: "{{defaultContext}}"
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file:
+            ./docker/Dockerfile
+          platforms: linux/amd64
+
+  build-apptainer-container:
+    needs: docker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    name: Build Apptainer Container
+    steps:
+      - name: Check out code for the container builds
+        uses: actions/checkout@v4
+      - name: Setup Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.3.4
+      - name: Docker meta 
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/mix3r            
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=pep440,pattern={{version}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}} 
+      - name: Build and push Apptainer container
+        run: |
+          tags="${{ steps.meta.outputs.tags }}"
+          csv_tags=$(printf "%s\n" "$tags" | awk -F: 'NR==1{printf "%s,", $0; next} {printf "%s,", $NF}' | sed 's/,$//')
+          IFS= read -r first_tag <<EOF
+          $tags
+          EOF
+          push_tags="$(printf $csv_tags | sed -e "s/mix3r/mix3r_sif/g")"
+          echo ${{ secrets.GITHUB_TOKEN }} | oras login --username ${{ github.repository_owner }} --password-stdin ghcr.io
+          apptainer build -F --build-arg mix3r_image="$first_tag" mix3r.sif apptainer/mix3r.def
+          oras push "$push_tags" mix3r.sif
+          rm mix3r.sif
+        shell: sh

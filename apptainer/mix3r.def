@@ -1,0 +1,9 @@
+Bootstrap: docker
+From: {{ mix3r_image }}
+
+%post
+
+%environment
+
+%runscript
+    exec entrypoint.sh "$@"
