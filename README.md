@@ -53,7 +53,7 @@ micromamba create -n mix3r \
     conda-pack=0.8.0 \
     numpy=2.0.2 \
     scipy=1.14.1 \
-     numba=0.61.2 \
+    numba=0.61.2 \
     cuda-nvcc cuda-nvrtc "cuda-version>=12.0,<=12.4" \
     pandas=2.2.3 \
     matplotlib-base=3.9.2 \
